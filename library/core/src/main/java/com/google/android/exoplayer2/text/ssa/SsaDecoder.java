@@ -17,11 +17,10 @@ package com.google.android.exoplayer2.text.ssa;
 
 import static com.google.android.exoplayer2.util.Util.castNonNull;
 
-import android.graphics.Color;
 import android.text.Layout;
 import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.extractor.CceLibrary;
+import com.google.android.exoplayer2.CceObject;
 import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.SimpleSubtitleDecoder;
 import com.google.android.exoplayer2.text.Subtitle;
@@ -109,13 +108,16 @@ public final class SsaDecoder extends SimpleSubtitleDecoder {
     if (!haveInitializationData) {
       parseHeader(data);
     }
+
     SsaDialogueFormat format = parseEventBody(data, cues, cueTimesUs);
 
     SsaSubtitle subtitle = new SsaSubtitle(cues, cueTimesUs, format);
 
-    subtitle.decoder = this;
-    CceLibrary.cceLib.setSubtitle(subtitle);
-    CceLibrary.cceLib.finishedHeader();
+    if (CceObject.inst.AUS_SUBTITLE) {
+      subtitle.decoder = this;
+      CceObject.inst.setSubtitle(subtitle);
+      CceObject.inst.finishedHeader();
+    }
 
     return subtitle;
   }
@@ -246,9 +248,6 @@ public final class SsaDecoder extends SimpleSubtitleDecoder {
     Assertions.checkArgument(dialogueLine.startsWith(DIALOGUE_LINE_PREFIX));
     String[] lineValues =
         dialogueLine.substring(DIALOGUE_LINE_PREFIX.length()).split(",", format.length);
-
-    Log.i("LUCI", dialogueLine);
-
     if (lineValues.length != format.length) {
       Log.w(TAG, "Skipping dialogue line with fewer columns than format: " + dialogueLine);
       return;
@@ -273,33 +272,6 @@ public final class SsaDecoder extends SimpleSubtitleDecoder {
             : null;
     String rawText = lineValues[format.textIndex];
 
-    int textColor = Color.YELLOW;
-
-    if (rawText.startsWith("#")) {
-      String colorText = rawText.substring(0, 7);
-
-      //black,   red,       green,     yellow,    blue,      magenta,   cyan,      white
-      // "#000000", "#ff0000", "#00ff00", "#ffff00", "#0000ff", "#ff00ff", "#00ffff", "#ffffff"
-      if (colorText.equals("#000000"))
-        textColor = Color.BLACK;
-      else if (colorText.equals("#ff0000"))
-        textColor = Color.RED;
-      else if (colorText.equals("#00ff00"))
-        textColor = Color.GREEN;
-      else if (colorText.equals("#ffff00"))
-        textColor = Color.YELLOW;
-      else if (colorText.equals("#0000ff"))
-        textColor = Color.BLUE;
-      else if (colorText.equals("#ff00ff"))
-        textColor = Color.MAGENTA;
-      else if (colorText.equals("#00ffff"))
-        textColor = Color.CYAN;
-      else if (colorText.equals("#ffffff"))
-        textColor = Color.WHITE;
-
-      rawText = rawText.substring(7);
-    }
-
     if (!rawText.equals("\\N")) {
       int lines = rawText.split(Pattern.quote("\\N"), -1).length;
       if (lines == 1)
@@ -309,12 +281,11 @@ public final class SsaDecoder extends SimpleSubtitleDecoder {
     }
 
     SsaStyle.Overrides styleOverrides = SsaStyle.Overrides.parseFromDialogue(rawText);
-
     String text =
         SsaStyle.Overrides.stripStyleOverrides(rawText)
             .replaceAll("\\\\N", "\n")
             .replaceAll("\\\\n", "\n");
-    Cue cue = createCue(text, style, styleOverrides, screenWidth, screenHeight, textColor);
+    Cue cue = createCue(text, style, styleOverrides, screenWidth, screenHeight);
 
     int startTimeIndex = addCuePlacerholderByTime(startTimeUs, cueTimesUs, cues);
     int endTimeIndex = addCuePlacerholderByTime(endTimeUs, cueTimesUs, cues);
@@ -322,7 +293,6 @@ public final class SsaDecoder extends SimpleSubtitleDecoder {
     for (int i = startTimeIndex; i < endTimeIndex; i++) {
       cues.get(i).add(cue);
     }
-
   }
 
   /**
@@ -349,8 +319,7 @@ public final class SsaDecoder extends SimpleSubtitleDecoder {
       @Nullable SsaStyle style,
       SsaStyle.Overrides styleOverrides,
       float screenWidth,
-      float screenHeight,
-      int textColor) {
+      float screenHeight) {
     @SsaStyle.SsaAlignment int alignment;
     if (styleOverrides.alignment != SsaStyle.SSA_ALIGNMENT_UNKNOWN) {
       alignment = styleOverrides.alignment;
@@ -383,8 +352,7 @@ public final class SsaDecoder extends SimpleSubtitleDecoder {
         lineAnchor,
         position,
         positionAnchor,
-        /* size= */ Cue.DIMEN_UNSET,
-        textColor);
+        /* size= */ Cue.DIMEN_UNSET);
   }
 
   @Nullable

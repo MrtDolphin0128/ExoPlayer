@@ -171,7 +171,6 @@ public final class Format implements Parcelable {
   // Lazily initialized hashcode.
   private int hashCode;
 
-  public boolean fakeUrl = false;
   // Video.
 
   /**

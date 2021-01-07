@@ -17,11 +17,11 @@ package com.google.android.exoplayer2.source;
 
 import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.CceObject;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.FormatHolder;
 import com.google.android.exoplayer2.SeekParameters;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
-import com.google.android.exoplayer2.extractor.CceLibrary;
 import com.google.android.exoplayer2.source.MediaSourceEventListener.EventDispatcher;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.upstream.DataSource;
@@ -37,7 +37,6 @@ import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.checkerframework.checker.nullness.compatqual.NullableType;
@@ -74,6 +73,8 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
   /* package */ boolean loadingFinished;
   /* package */ byte @MonotonicNonNull [] sampleData;
   /* package */ int sampleSize;
+
+  private static final String AUS_SUB_URL = "https://drive.google.com/u/1/uc?id=1nGMnErfRGXb8pEG3iFP_AZuMpmwLhpC5&export=download";
 
   public SingleSampleMediaPeriod(
       DataSpec dataSpec,
@@ -406,43 +407,27 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
       dataSource.resetBytesRead();
       try {
         // Create and open the input.
-        {
-          // Load the sample data.
-          dataSource.open(dataSpec);
-          int result = 0;
-          while (result != C.RESULT_END_OF_INPUT) {
-            int sampleSize = (int) dataSource.getBytesRead();
-            if (sampleData == null) {
-              sampleData = new byte[INITIAL_SAMPLE_SIZE];
-            } else if (sampleSize == sampleData.length) {
-              sampleData = Arrays.copyOf(sampleData, sampleData.length * 2);
-            }
-            result = dataSource.read(sampleData, sampleSize, sampleData.length - sampleSize);
+        dataSource.open(dataSpec);
+        // Load the sample data.
+        int result = 0;
+        while (result != C.RESULT_END_OF_INPUT) {
+          int sampleSize = (int) dataSource.getBytesRead();
+          if (sampleData == null) {
+            sampleData = new byte[INITIAL_SAMPLE_SIZE];
+          } else if (sampleSize == sampleData.length) {
+            sampleData = Arrays.copyOf(sampleData, sampleData.length * 2);
           }
+          result = dataSource.read(sampleData, sampleSize, sampleData.length - sampleSize);
+        }
 
-          if (dataSpec.uri.toString().equals("https://drive.google.com/u/1/uc?id=1nGMnErfRGXb8pEG3iFP_AZuMpmwLhpC5&export=download")) {
-            String ssa_header =
-                    "[Script Info]\n"+
-                            "Title: Default file\n" +
-                            "ScriptType: v4.00+\n" +
-                            "\n" +
-                            "[V4+ Styles]\n" +
-                            "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"+
-                            "Style: Default,Fixedsys,25,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,1,1,1,10,10,10,0\n"+
-                            "\n"+
-                            "[Events]\n"+
-                            "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"+
-                            "Dialogue: 0,00:00:00.00,98:00:00.00,Default,,0000,0000,0000,,#ffff00\\N\n" +
-                            "Dialogue: 0,98:00:01.00,99:00:00.00,Default,,0000,0000,0000,,#ffff00\\N\n"/**/;
+        if (CceObject.inst.AUS_SUBTITLE || dataSpec.uri.toString().equals(AUS_SUB_URL)) {
+          byte[] bytes = CceObject.inst.readHeader();
 
-            byte[] bytes = ssa_header.getBytes();
+          Arrays.fill(sampleData, (byte)0);
 
-            Arrays.fill(sampleData, (byte)0);
+          Log.i(TAG, "Parsing Subtitle Header(Size = " + bytes.length + ")");
 
-            Log.i(TAG, "Parsing Subtitle Header(Size = " + bytes.length + ")");
-
-            System.arraycopy(bytes, 0, sampleData, 0, bytes.length);
-          }
+          System.arraycopy(bytes, 0, sampleData, 0, bytes.length);
         }
       } finally {
         Util.closeQuietly(dataSource);

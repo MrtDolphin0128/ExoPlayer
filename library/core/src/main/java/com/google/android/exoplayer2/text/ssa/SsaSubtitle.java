@@ -15,8 +15,9 @@
  */
 package com.google.android.exoplayer2.text.ssa;
 
-import androidx.annotation.Nullable;
+import static com.google.android.exoplayer2.mediacodec.MediaCodecInfo.TAG;
 
+import androidx.annotation.Nullable;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.text.Subtitle;
@@ -26,8 +27,6 @@ import com.google.android.exoplayer2.util.ParsableByteArray;
 import com.google.android.exoplayer2.util.Util;
 import java.util.Collections;
 import java.util.List;
-
-import static com.google.android.exoplayer2.mediacodec.MediaCodecInfo.TAG;
 
 /**
  * A representation of an SSA/ASS subtitle.

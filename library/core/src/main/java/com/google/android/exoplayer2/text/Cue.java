@@ -20,9 +20,6 @@ import android.graphics.Color;
 import android.text.Layout.Alignment;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
-
-import com.google.android.exoplayer2.util.Log;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -214,8 +211,6 @@ public class Cue {
    */
   public final int windowColor;
 
-  public final int textColor;
-
   /**
    * The default text size type for this cue's text, or {@link #TYPE_UNSET} if this cue has no
    * default text size.
@@ -267,8 +262,7 @@ public class Cue {
         width,
         height,
         /* windowColorSet= */ false,
-        /* windowColor= */ Color.BLACK,
-        Color.WHITE);
+        /* windowColor= */ Color.BLACK);
   }
 
   /**
@@ -302,53 +296,25 @@ public class Cue {
    * @param size See {@link #size}.
    */
   public Cue(
-          CharSequence text,
-          @Nullable Alignment textAlignment,
-          float line,
-          @LineType int lineType,
-          @AnchorType int lineAnchor,
-          float position,
-          @AnchorType int positionAnchor,
-          float size) {
+      CharSequence text,
+      @Nullable Alignment textAlignment,
+      float line,
+      @LineType int lineType,
+      @AnchorType int lineAnchor,
+      float position,
+      @AnchorType int positionAnchor,
+      float size) {
     this(
-            text,
-            textAlignment,
-            line,
-            lineType,
-            lineAnchor,
-            position,
-            positionAnchor,
-            size,
-            /* windowColorSet= */ false,
-            /* windowColor= */ Color.BLACK);
-  }
-
-  public Cue(
-          CharSequence text,
-          @Nullable Alignment textAlignment,
-          float line,
-          @LineType int lineType,
-          @AnchorType int lineAnchor,
-          float position,
-          @AnchorType int positionAnchor,
-          float size,
-          int textColor) {
-    this(
-            text,
-            textAlignment,
-            /* bitmap= */ null,
-            line,
-            lineType,
-            lineAnchor,
-            position,
-            positionAnchor,
-            /* textSizeType= */ TYPE_UNSET,
-            /* textSize= */ DIMEN_UNSET,
-            size,
-            /* bitmapHeight= */ DIMEN_UNSET,
-            false,
-            Color.BLACK,
-            textColor);
+        text,
+        textAlignment,
+        line,
+        lineType,
+        lineAnchor,
+        position,
+        positionAnchor,
+        size,
+        /* windowColorSet= */ false,
+        /* windowColor= */ Color.BLACK);
   }
 
   /**
@@ -390,8 +356,7 @@ public class Cue {
         size,
         /* bitmapHeight= */ DIMEN_UNSET,
         /* windowColorSet= */ false,
-        /* windowColor= */ Color.BLACK,
-        Color.WHITE);
+        /* windowColor= */ Color.BLACK);
   }
 
   /**
@@ -433,8 +398,7 @@ public class Cue {
         size,
         /* bitmapHeight= */ DIMEN_UNSET,
         windowColorSet,
-        windowColor,
-        Color.WHITE);
+        windowColor);
   }
 
   private Cue(
@@ -451,8 +415,7 @@ public class Cue {
       float size,
       float bitmapHeight,
       boolean windowColorSet,
-      int windowColor,
-      int textColor) {
+      int windowColor) {
     this.text = text;
     this.textAlignment = textAlignment;
     this.bitmap = bitmap;
@@ -467,7 +430,6 @@ public class Cue {
     this.windowColor = windowColor;
     this.textSizeType = textSizeType;
     this.textSize = textSize;
-    this.textColor = textColor;
   }
 
 }

@@ -186,8 +186,7 @@ public final class PesReader implements TsPayloadReader {
       return false;
     }
 
-    int stream_id = pesScratch.readBits(8); // stream_id.
-
+    pesScratch.skipBits(8); // stream_id.
     int packetLength = pesScratch.readBits(16);
     pesScratch.skipBits(5); // '10' (2), PES_scrambling_control (2), PES_priority (1)
     dataAlignmentIndicator = pesScratch.readBit();

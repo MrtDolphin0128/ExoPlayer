@@ -114,7 +114,7 @@ public final class SilenceMediaSource extends BaseMediaSource {
             durationUs,
             /* isSeekable= */ true,
             /* isDynamic= */ false,
-            /* isLive= */ true,
+            /* isLive= */ false,
             /* manifest= */ null,
             tag));
   }
